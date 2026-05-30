@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Utku Hırdavat — Ürün Kataloğu</title>
+  <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content="Utku Hırdavat" />
+  <meta property="og:title"       content="Utku Hırdavat — Kaliteli Hırdavat Ürünleri" />
+  <meta property="og:description" content="Kaliteli hırdavat ürünleri, uygun fiyatlarla. Hemen inceleyin!" />
+  <meta property="og:url"         content="https://utkuhirdavat.com.tr/" />
+  <meta name="twitter:card"       content="summary_large_image" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"/>
+<style>
+    html, body { overflow-x: hidden; }
+
+    /* ─── MOBİL KATEGORİ CHIP BAR ─── */
+    /* PC'de (768px üzeri) kesinlikle gizli */
+    .mobile-cat-bar {
+      display: none !important;
+    }
+
+    /* Sadece telefon/tablet (768px ve altı) */
+    @media (max-width: 768px) {
+      .sidebar { display: none !important; }
+
+      .mobile-cat-bar {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        gap: 8px;
+        padding: 0 12px 8px;
+        scrollbar-width: none;
+      }
+      .mobile-cat-bar::-webkit-scrollbar { display: none; }
+
+      .catalog-layout {
+        grid-template-columns: 1fr !important;
+        padding: 0 12px 40px !important;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .admin-table th:nth-child(2),
+      .admin-table td:nth-child(2) { display: none; }
+      .admin-table th:nth-child(4),
+      .admin-table td:nth-child(4) { display: none; }
+      .btn-edit, .btn-delete { padding: 5px 8px; font-size: 11px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <span class="brand-icon" id="adminTrigger">⚙</span>
+       <span class="brand-name">UTKU HIRDAVAT <span class="brand-accent">KATAlog</span></span>
+    </div>
+    <nav class="top-nav">
+      <button class="nav-btn active" onclick="openPage('catalog')">Katalog</button>
+      <button class="nav-btn" onclick="openPage('faq')">SSS</button>
+      <button class="nav-btn" onclick="openPage('contact')">İletişim</button>
+      <button class="nav-btn theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Tema değiştir">🌙</button>
+    </nav>
+  </div>
+</header>
+
+<!-- CATALOG PAGE -->
+<div id="page-catalog" class="page active">
+  <section id="sliderSection">
+    <div class="slider-wrap">
+      <div id="sliderTrack"></div>
+      <button class="slider-prev" onclick="prevSlide()">‹</button>
+      <button class="slider-next" onclick="nextSlide()">›</button>
+      <div id="sliderDots"></div>
+    </div>
+  </section>
+
+  <div class="hero">
+    <div class="hero-text">
+      <h1>Ürün Kataloğu</h1>
+      <p>Kaliteli ürünler, uygun fiyatlar</p>
+    </div>
+    <div class="hero-search">
+      <input type="search" id="searchInput" placeholder="Ürün ara..." oninput="filterProducts()" onchange="filterProducts()" onsearch="filterProducts()" />
+      <span class="search-icon">🔍</span>
+    </div>
+  </div>
+
+  <!-- MOBİL KATEGORİ ÇİP BAR (yalnızca telefonda görünür) -->
+  <div class="mobile-cat-bar" id="mobileCatBar"></div>
+
+  <div class="catalog-layout">
+    <aside class="sidebar">
+      <h3>Kategoriler</h3>
+      <ul id="categoryList" class="cat-list">
+        <li class="cat-item active" onclick="selectCategory('Tüm Ürünler', this)">
+          <span class="cat-icon">📦</span> Tüm Ürünler
+          <span class="cat-count" id="count-all">0</span>
+        </li>
+      </ul>
+      <div class="filter-panel">
+        <h4>🎛 Filtreler</h4>
+        <div class="filter-row">
+          <label>Fiyat Aralığı (₺)</label>
+          <div class="price-inputs">
+            <input type="number" id="filterMinPrice" placeholder="Min" min="0" oninput="filterProducts()" />
+            <input type="number" id="filterMaxPrice" placeholder="Max" min="0" oninput="filterProducts()" />
+          </div>
+        </div>
+        <div class="filter-row">
+          <label class="filter-checkbox">
+            <input type="checkbox" id="filterStock" onchange="filterProducts()" />
+            <span>Yalnızca Stokta Olanlar</span>
+          </label>
+        </div>
+        <button class="btn-reset-filter" onclick="resetFilters()">↺ Filtreleri Sıfırla</button>
+      </div>
+    </aside>
+
+    <main class="product-area">
+      <div class="area-header">
+        <span id="currentCatLabel">Tüm Ürünler</span>
+        <div style="display:flex;align-items:center;gap:10px">
+          <select id="sortSelect" onchange="setSort(this.value)" class="sort-select">
+            <option value="default">🔁 Varsayılan</option>
+            <option value="popular">🔥 En Çok Beğenilen</option>
+            <option value="price-asc">📈 Fiyat: Düşükten Yüksek</option>
+            <option value="price-desc">📉 Fiyat: Yüksekten Düşük</option>
+          </select>
+          <span id="productCount" class="result-count">0 ürün</span>
+        </div>
+      </div>
+      <div id="productGrid" class="product-grid">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- FAQ PAGE -->
+<div id="page-faq" class="page">
+  <div class="faq-wrapper">
+    <h1 class="faq-title">Sık Sorulan Sorular</h1>
+    <p class="faq-sub">Aklınızdaki soruların cevaplarını burada bulabilirsiniz.</p>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)"><span>🚚 Teslimat nasıl yapılıyor?</span><span class="faq-arrow">›</span></button>
+        <div class="faq-a">Siparişlerinizi WhatsApp üzerinden ilettikten sonra adresinize kargo ile gönderim yapılmaktadır. Pazartesi-Cuma arası saat 14.00'a kadar verilen siparişler aynı gün kargoya teslim edilmektedir. Cumartesi günleri saat 12.00'a kadar verilen siparişler aynı gün çıkmaktadır.
+</div>
+      </div>
+      
+ <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)"><span>💳 Hangi ödeme yöntemlerini kabul ediyorsunuz?</span><span class="faq-arrow">›</span></button>
+        <div class="faq-a">Nakit ve havale/EFT seçeneklerimiz mevcuttur.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)"><span>🔄 Değişim koşulları nelerdir?</span><span class="faq-arrow">›</span></button>
+        <div class="faq-a">Ürünü teslim aldıktan sonra 7 gün içinde, kullanılmamış ve orijinal ambalajında olmak kaydıyla değişim yapabilirsiniz.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)"><span>🛡️ Ürünlerde garanti var mı?</span><span class="faq-arrow">›</span></button>
+        <div class="faq-a">Marka ürünlerde üretici garantisi geçerlidir ( Fabrika hatasına karşı ). Garanti süresi ürüne göre değişmekle birlikte genellikle 1–2 yıldır.
+</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)"><span>📦 Toplu sipariş verebilir miyim?</span><span class="faq-arrow">›</span></button>
+        <div class="faq-a">Evet, toplu siparişler için özel fiyatlandırma yapılmaktadır. Esnaf ve müteahhitler için özel indirimler mevcuttur.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)"><span>🏪 Mağazayı ziyaret edebilir miyim?</span><span class="faq-arrow">›</span></button>
+        <div class="faq-a">Evet, mağazamıza her gün 08:00–19:00 saatleri arasında gelebilirsiniz.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)"><span>⏰ Çalışma saatleriniz nelerdir?</span><span class="faq-arrow">›</span></button>
+        <div class="faq-a">Hafta içi ve Cumartesi 08:00–19:00, Pazar saatler değişkenlik göstermektedir gelmeden önce arayıp bilgi alabilirsiniz.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)"><span>🔧 Ürün montajı yapıyor musunuz?</span><span class="faq-arrow">›</span></button>
+        <div class="faq-a">Bazı ürünler için montaj hizmeti sunulmaktadır. Mersin il merkezi için montaj desteği mevcuttur.</div>
+      </div>
+    </div>
+    <div class="faq-cta">
+      <p>Cevabını bulamadığınız bir soru mu var?</p>
+      <button class="btn-wa faq-wa-btn" onclick="openWaChooser('Merhaba, bir sorum var.')">💬 WhatsApp'tan Sorun</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONTACT PAGE -->
+<div id="page-contact" class="page">
+  <div class="contact-wrapper">
+    <h1 class="contact-title">İletişim</h1>
+    <p class="contact-sub">Bize ulaşın, size yardımcı olalım.</p>
+    <a class="contact-card" href="tel:+905057271651">
+      <span class="contact-icon">📞</span>
+      <div><div class="contact-label">Telefon</div><div class="contact-value">0505 727 16 51</div></div>
+      <span class="contact-arrow">›</span>
+    </a>
+
+      <a class="contact-card" href="javascript:void(0)" onclick="openWaChooser('Merhaba, size ulaşmak istedim.')">
+      <span class="contact-icon">💬</span>
+      <div><div class="contact-label">WhatsApp</div><div class="contact-value">Mesaj Gönder</div></div>
+      <span class="contact-arrow">›</span>
+    </a>
+    <a class="contact-card" href="https://maps.app.goo.gl/L7NhUYtPEmxxSWpVA" target="_blank" rel="noopener">
+      <span class="contact-icon">📍</span>
+      <div><div class="contact-label">Mağaza Konumu</div><div class="contact-value">Yol Tarifi Al</div></div>
+      <span class="contact-arrow">›</span>
+    </a>
+  </div>
+</div>
+
+<!-- ADMIN PAGE -->
+<div id="page-admin" class="page">
+  <div class="admin-wrapper">
+
+    <!-- TOPBAR -->
+    <div class="admin-topbar">
+      <div class="admin-topbar-left">
+        <span class="admin-badge">🔐 Yönetim Paneli</span>
+        <span class="admin-badge-sub">Yetkili Erişim</span>
+      </div>
+      <button class="btn-logout" onclick="adminLogout()">Çıkış Yap</button>
+    </div>
+
+    <!-- İSTATİSTİK KARTLARI -->
+    <div class="stat-grid" id="statGrid">
+      <div class="stat-card stat-blue"><div class="stat-icon">📦</div><div class="stat-body"><div class="stat-value" id="statTotalProducts">—</div><div class="stat-label">Toplam Ürün</div></div></div>
+      <div class="stat-card stat-gold"><div class="stat-icon">🗂️</div><div class="stat-body"><div class="stat-value" id="statTotalCats">—</div><div class="stat-label">Kategori</div></div></div>
+      <div class="stat-card stat-green"><div class="stat-icon">✅</div><div class="stat-body"><div class="stat-value" id="statInStock">—</div><div class="stat-label">Stokta Var</div></div></div>
+      <div class="stat-card stat-red"><div class="stat-icon">❌</div><div class="stat-body"><div class="stat-value" id="statOutStock">—</div><div class="stat-label">Stokta Yok</div></div></div>
+      <div class="stat-card stat-pink" style="grid-column:span 2"><div class="stat-icon">♥</div><div class="stat-body"><div class="stat-value" id="statTopLiked">—</div><div class="stat-label">En Çok Beğenilen</div></div></div>
+      <div class="stat-card stat-purple" style="grid-column:span 2"><div class="stat-icon">💰</div><div class="stat-body"><div class="stat-value" id="statAvgPrice">—</div><div class="stat-label">Ortalama Fiyat</div></div></div>
+    </div>
+
+    <!-- HIZLI EYLEM BUTONLARI -->
+    <div class="admin-quick-btns">
+      <button class="admin-quick-btn" onclick="toggleAdminSection('secSlider')">🎠 Slider</button>
+      <button class="admin-quick-btn admin-quick-btn--primary" onclick="toggleAdminSection('secAddProduct')">➕ Ürün Ekle</button>
+      <button class="admin-quick-btn" onclick="toggleAdminSection('secProducts')">📋 Ürünler</button>
+      <button class="admin-quick-btn" onclick="toggleAdminSection('secBackup')">📦 Yedek</button>
+      <button class="admin-quick-btn" onclick="toggleAdminSection('secVisits')">📊 Ziyaretçi</button>
+      <button class="admin-quick-btn" onclick="toggleAdminSection('secCats')">🗂️ Kategoriler</button>
+    </div>
+
+    <!-- SLIDER -->
+    <div class="admin-card admin-section" id="secSlider">
+      <button class="admin-section-toggle" onclick="toggleAdminSection('secSlider')">
+        <span>🎠 Ana Sayfa Banner (Slider)</span><span class="admin-section-arrow">›</span>
+      </button>
+      <div class="admin-section-body">
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Ana sayfada gösterilecek öne çıkan ürünler (max 6).</p>
+        <div id="adminSliderList"><p class="empty-msg">Yükleniyor...</p></div>
+        <div class="slider-add-row">
+          <select id="sliderAddSelect"><option value="">-- Ürün seç --</option></select>
+          <button class="btn-slider-add" onclick="addSliderItem()">+ Slider'a Ekle</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- YENİ ÜRÜN EKLE -->
+    <div class="admin-card admin-section admin-section--open" id="secAddProduct">
+      <button class="admin-section-toggle" onclick="toggleAdminSection('secAddProduct')">
+        <span>➕ Yeni Ürün Ekle</span><span class="admin-section-arrow">›</span>
+      </button>
+      <div class="admin-section-body">
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Ürün Görselleri <span style="color:var(--text-muted);font-weight:400">(max 5 — ilki ana görsel)</span></label>
+            <div class="img-upload-area" id="imgUploadArea" onclick="document.getElementById('imgFile').click()">
+              <div id="imgPreviewList"></div>
+              <div class="img-placeholder" id="imgPlaceholder"><span>📷</span><p>Görsel eklemek için tıklayın</p></div>
+            </div>
+            <input type="file" id="imgFile" accept="image/*" multiple style="display:none" onchange="previewImage(event)"/>
+          </div>
+          <div class="form-group"><label>Ürün Adı</label><input type="text" id="prodName" placeholder="Örn: Profesyonel Matkap" /></div>
+          <div class="form-group">
+            <label>Kategori</label>
+            <div class="cat-input-row">
+              <select id="prodCatSelect" onchange="catSelectChanged()"><option value="">-- Kategori Seç --</option></select>
+              <span>ya da</span>
+              <input type="text" id="prodCatNew" placeholder="Yeni kategori yaz..." />
+            </div>
+          </div>
+          <div class="form-group full"><label>Ürün Açıklaması</label><textarea id="prodDesc" placeholder="Ürün hakkında detaylı açıklama yazın..."></textarea></div>
+          <div class="form-group"><label>Fiyat (₺)</label><input type="number" id="prodPrice" placeholder="0" min="0" step="1" /></div>
+          <div class="form-group">
+            <label>Stok Durumu</label>
+            <select id="prodStock">
+              <option value="Stokta Var">✅ Stokta Var</option>
+              <option value="Sınırlı Stok">⚠️ Sınırlı Stok</option>
+              <option value="Stokta Yok">❌ Stokta Yok</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-add" id="btnAddProduct" onclick="addProduct()">Ürünü Kataloga Ekle</button>
+      </div>
+    </div>
+
+    <!-- MEVCUT ÜRÜNLER -->
+    <div class="admin-card admin-section" id="secProducts">
+      <button class="admin-section-toggle" onclick="toggleAdminSection('secProducts')">
+        <span>📋 Mevcut Ürünler</span><span class="admin-section-arrow">›</span>
+      </button>
+      <div class="admin-section-body">
+        <div class="bulk-toolbar" id="bulkToolbar">
+          <div class="admin-search-wrap" style="flex:1;margin-bottom:0">
+            <span>🔍</span>
+            <input type="text" id="adminSearchInput" placeholder="Ürün adına göre ara..." oninput="filterAdminProducts()" />
+          </div>
+          <label class="bulk-select-all-label">
+            <input type="checkbox" id="selectAllCheck" onchange="toggleSelectAll(this.checked)" />
+            <span>Tümünü Seç</span>
+          </label>
+          <div class="bulk-actions" id="bulkActions">
+            <span class="bulk-count" id="bulkCount">0 seçili</span>
+            <select id="bulkStockSelect" class="sort-select" style="font-size:12px">
+              <option value="">📦 Stok Değiştir</option>
+              <option value="Stokta Var">✅ Stokta Var</option>
+              <option value="Sınırlı Stok">⚠️ Sınırlı Stok</option>
+              <option value="Stokta Yok">❌ Stokta Yok</option>
+            </select>
+            <button class="btn-bulk-stock" onclick="bulkChangeStock()">Uygula</button>
+            <button class="btn-bulk-delete" onclick="bulkDelete()">🗑 Seçilenleri Sil</button>
+          </div>
+        </div>
+        <div id="adminProductList" class="admin-table-wrap"><p class="empty-msg">Henüz ürün yok.</p></div>
+      </div>
+    </div>
+
+    <!-- YEDEKLEME -->
+    <div class="admin-card admin-section" id="secBackup">
+      <button class="admin-section-toggle" onclick="toggleAdminSection('secBackup')">
+        <span>📦 Veri Yedekleme &amp; Geri Yükleme</span><span class="admin-section-arrow">›</span>
+      </button>
+      <div class="admin-section-body">
+        <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+          <div style="flex:1;min-width:240px;background:var(--bg-card2);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:var(--radius);padding:20px">
+            <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">📤 Dışa Aktar</div>
+            <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:16px">Tüm ürün verilerini <code style="background:var(--bg-base);padding:1px 6px;border-radius:4px;font-size:12px">urunler_yedek.json</code> olarak indirin.</p>
+            <button class="btn-add" id="btnExport" onclick="exportProducts()" style="padding:11px 0;font-size:13px">📤 Dışa Aktar (JSON)</button>
+          </div>
+          <div style="flex:1;min-width:240px;background:var(--bg-card2);border:1px solid var(--border);border-left:3px solid #3b82f6;border-radius:var(--radius);padding:20px">
+            <div style="font-size:13px;font-weight:700;color:#3b82f6;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">📥 İçe Aktar</div>
+            <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:16px">Daha önce dışa aktardığınız <code style="background:var(--bg-base);padding:1px 6px;border-radius:4px;font-size:12px">.json</code> dosyasını yükleyin.</p>
+            <label style="display:block;margin-bottom:10px">
+              <div style="font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">JSON Dosyası Seç</div>
+              <input type="file" id="importFile" accept=".json" style="width:100%;background:var(--bg-base);border:1px solid var(--border);color:var(--text-primary);padding:8px 12px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer" />
+            </label>
+            <button id="btnImport" onclick="importProducts()" style="width:100%;padding:11px 0;border-radius:10px;background:rgba(59,130,246,0.15);border:1px solid #3b82f6;color:#3b82f6;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:.2s" onmouseover="this.style.background='#3b82f6';this.style.color='#fff'" onmouseout="this.style.background='rgba(59,130,246,0.15)';this.style.color='#3b82f6'">📥 Yükle</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ZİYARETÇİ -->
+    <div class="admin-card admin-section" id="secVisits">
+      <button class="admin-section-toggle" onclick="toggleAdminSection('secVisits')">
+        <span>📊 Ziyaretçi İstatistikleri</span><span class="admin-section-arrow">›</span>
+      </button>
+      <div class="admin-section-body">
+        <div id="visitStatsWrap"><p class="empty-msg">⏳ Yükleniyor...</p></div>
+      </div>
+    </div>
+
+    <!-- KATEGORİ -->
+    <div class="admin-card admin-section" id="secCats">
+      <button class="admin-section-toggle" onclick="toggleAdminSection('secCats')">
+        <span>🗂️ Kategori Yönetimi</span><span class="admin-section-arrow">›</span>
+      </button>
+      <div class="admin-section-body">
+        <div id="adminCatList" class="cat-chips"><p class="empty-msg">Henüz kategori yok.</p></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PRODUCT DETAIL MODAL -->
+<div id="modal" class="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('modal').classList.remove('open')">✕</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<!-- SEPET FAB -->
+<button class="cart-fab" id="cartFab" onclick="openCart()" style="display:none">
+  🛒
+  <span class="cart-fab-badge" id="cartFabBadge">0</span>
+</button>
+
+<!-- SEPET DRAWER -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCartOverlay(event)">
+  <div class="cart-drawer" id="cartDrawer">
+    <div class="cart-header">
+      <h2>🛒 Sepetim</h2>
+      <button class="cart-close" onclick="closeCart()">✕</button>
+    </div>
+    <div class="cart-items" id="cartItems"></div>
+    <div class="cart-footer" id="cartFooter"></div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <span class="footer-logo">⚙</span>
+      <span class="footer-name">UTKU HIRDAVAT</span>
+    </div>
+    <div class="footer-contact">
+      <a href="tel:+905057271651" class="footer-link">📞 0505 727 16 51</a>
+      <button onclick="openWaChooser('Merhaba!')" class="footer-link" style="background:none;border:none;cursor:pointer;font-size:inherit;font-family:inherit;padding:0">💬 WhatsApp</button>
+      <a href="https://maps.app.goo.gl/L7NhUYtPEmxxSWpVA" target="_blank" rel="noopener" class="footer-link">📍 Konum</a>
+    </div>
+    <div class="footer-social">
+      <button onclick="openWaChooser('Merhaba!')" class="social-btn" title="WhatsApp" style="border:none;cursor:pointer">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      </button>
+      <a href="https://instagram.com/utkuhirdavat_" target="_blank" rel="noopener" class="social-btn" title="Instagram">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+      </a>
+    </div>
+    <div class="footer-copy">© 2025 Utku Hırdavat. Tüm hakları saklıdır.</div>
+  </div>
+</footer>
+
+<script type="module" src="app.js"></script>
+<script>
+  let clickCount = 0, clickTimer = null;
+  document.getElementById('adminTrigger').addEventListener('click', () => {
+    clickCount++;
+    clearTimeout(clickTimer);
+    clickTimer = setTimeout(() => { clickCount = 0; }, 1500);
+    if (clickCount >= 3) { clickCount = 0; setTimeout(() => { if (window.openPage) window.openPage('admin'); }, 50); }
+  });
+  function toggleFaq(btn) {
+    const item = btn.closest('.faq-item'), isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+  window.toggleFaq = toggleFaq;
+  function toggleTheme() {
+    const isLight = document.body.classList.toggle('light-theme');
+    document.getElementById('themeToggle').textContent = isLight ? '☀️' : '🌙';
+    localStorage.setItem('utku_theme', isLight ? 'light' : 'dark');
+  }
+  window.toggleTheme = toggleTheme;
+  (function() {
+    if (localStorage.getItem('utku_theme') === 'light') {
+      document.body.classList.add('light-theme');
+      document.addEventListener('DOMContentLoaded', () => { const b = document.getElementById('themeToggle'); if(b) b.textContent='☀️'; });
+    }
+  })();
+</script>
+</body>
+</html>
